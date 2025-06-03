@@ -138,11 +138,11 @@ def download_cv(filename):
 # Sirve los archivos estáticos (HTML, CSS, JS)
 @app.route('/')
 def index():
-    return send_from_directory('.', 'index.html')
+    return send_from_directory('Frontend', 'index.html')
 
 @app.route('/<path:path>')
 def static_files(path):
-    return send_from_directory('.', path)
+    return send_from_directory('Frontend', path)
 
 
 if __name__ == '__main__':
