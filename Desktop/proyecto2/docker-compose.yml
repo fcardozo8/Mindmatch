@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./cv_files:/app/cv_files  # Mapear la carpeta de CVs al host
+      - ./.env:/app/.env         # Mapear el archivo .env
+    depends_on:
+      - mongo
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/cv_filter_db # Conexión a MongoDB dentro de Docker
+      UPLOAD_FOLDER: /app/cv_files # Ruta en el contenedor para guardar CVs
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db # Persistir datos de MongoDB
+
+volumes:
+  mongo_data:

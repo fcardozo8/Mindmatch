@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Filtrado de CVs</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Filtrado de CVs</h1>
+
+      <div class="upload-section">
+        <h2>Cargar CVs (PDF)</h2>
+        <input type="file" id="cvUpload" multiple accept=".pdf" />
+        <button id="uploadButton">Subir CVs</button>
+        <div id="uploadStatus"></div>
+      </div>
+
+      <div class="filter-section">
+        <h2>Seleccionar Filtros</h2>
+        <div id="skillCheckboxes"></div>
+        <button id="filterButton">Filtrar CVs</button>
+      </div>
+
+      <div class="results-section">
+        <h2>Resultados del Filtrado</h2>
+        <ul id="filteredCvsList"></ul>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
