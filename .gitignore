@@ -1,0 +1,23 @@
+# Configuraciones y entornos
+.env
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.swp
+
+# Subidas de usuarios
+backend/cv_files/
+
+# Entornos virtuales
+venv/
+env/
+
+# Archivos de IDE
+.vscode/
+.idea/
