@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const backendUrl = 'http://localhost:5000';
+
     const cvUploadInput = document.getElementById('cvUpload');
     const uploadButton = document.getElementById('uploadButton');
     const uploadStatusDiv = document.getElementById('uploadStatus');
@@ -9,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Función para obtener y mostrar las habilidades disponibles del backend
     async function fetchSkills() {
         try {
-            const response = await fetch('/skills'); // Endpoint en tu backend para obtener habilidades
+            const response = await fetch(`${backendUrl}/skills`);
             const skills = await response.json();
             skillCheckboxesDiv.innerHTML = ''; // Limpiar checkboxes existentes
             skills.forEach(skill => {
@@ -45,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         uploadStatusDiv.textContent = 'Subiendo CVs...';
         try {
-            const response = await fetch('/upload_cvs', { // Endpoint en tu backend para subir CVs
+            const response = await fetch(`${backendUrl}/upload_cvs`, {
                 method: 'POST',
                 body: formData
             });
@@ -75,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         filteredCvsList.innerHTML = ''; // Limpiar resultados anteriores
         try {
-            const response = await fetch('/filter_cvs', { // Endpoint en tu backend para filtrar CVs
+            const response = await fetch(`${backendUrl}/filter_cvs`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -89,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     filteredCvs.forEach(cv => {
                         const li = document.createElement('li');
                         const a = document.createElement('a');
-                        a.href = `/download_cv/${cv.filename}`; // Endpoint para descargar el CV
+                        a.href = `${backendUrl}/download_cv/${cv.filename}`;
                         a.textContent = cv.original_filename;
-                        a.target = "_blank"; // Abrir en nueva pestaña
+                        a.target = "_blank";
                         li.appendChild(a);
                         filteredCvsList.appendChild(li);
                     });
