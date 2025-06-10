@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+   
+<link rel="stylesheet" href="/static/css/styles.css">
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMatch - Dashboard Reclutador</title>
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333 ;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.8;
+            color: #555;
+        }
+
+        /* Main content layout */
+        .main-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Sidebar de filtros */
+        .sidebar {
+            flex: 0 0 300px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .sidebar h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        .filter-group {
+            margin-bottom: 25px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            background-color: #e0e0e0;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.95em;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .skill-item:hover {
+            background-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .skill-item.selected {
+            background-color: #667eea;
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .filter-button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .filter-button:hover {
+            background-color: #5a6ed0;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Favoritos toggle */
+        .favorites-filter {
+            margin-bottom: 20px;
+        }
+
+        .favorites-toggle {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .favorites-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .favorites-toggle.active {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+
+        /* Contenido principal (resultados) */
+        .content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-summary {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+
+        .view-options .btn {
+            background-color: #f0f0f0;
+            color: #555;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-left: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .view-options .btn.active {
+            background-color: #667eea;
+            color: white;
+        }
+
+        /* Lista de candidatos (resultados) */
+        .candidate-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .candidate-list.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .candidate-card {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .candidate-card.favorite {
+            border-left: 4px solid #f39c12;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+        }
+        /* Botón Eliminar CV  */
+        .delete-cv-btn {
+             background: linear-gradient(135deg, #ff6b6b 0%, #c0392b 100%);
+             color: white;
+             border: none;
+             padding: 10px 20px;
+             border-radius: 8px;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             font-weight: bold;
+             box-shadow: 0 2px 5px rgba(192, 57, 43, 0.2);
+        }
+
+        .delete-cv-btn:hover {
+             transform: translateY(-2px);
+             box-shadow: 0 8px 20px rgba(192, 57, 43, 0.4);
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .candidate-card h3 {
+            font-size: 1.4em;
+            color: #333;
+            margin: 0;
+        }
+
+        .candidate-card p {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .candidate-skills {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .candidate-skill {
+            background-color: #e6f0ff;
+            color: #3366cc;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        /* NEW: Styles for folders */
+        .candidate-folders {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        .folder-tag {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        .assign-folder-select {
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            font-size: 0.9em;
+            background-color: white;
+        }
+        .folder-management {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+        }
+        .folder-management h3 {
+            margin-bottom: 15px;
+            color: #4a4a4a;
+        }
+        .folder-management .input-field {
+            width: calc(100% - 10px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        .folder-management .action-button {
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .folder-management .action-button.primary {
+            background-color: #28a745;
+            color: white;
+        }
+        .folder-management .action-button.primary:hover {
+            background-color: #218838;
+        }
+        .folder-management .action-button.secondary {
+            background-color: #007bff;
+            color: white;
+            margin-top: 10px;
+        }
+        .folder-management .action-button.secondary:hover {
+            background-color: #0056b3;
+        }
+        .folder-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 15px;
+        }
+        .folder-list li {
+            background-color: #f0f8ff;
+            border: 1px solid #e0efff;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95em;
+            color: #333;
+        }
+        .folder-list li .delete-folder-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .folder-list li .delete-folder-btn:hover {
+            background-color: #c82333;
+        }
+        .message-area {
+            margin-top: 10px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .message-area.success { color: green; }
+        .message-area.error { color: red; }
+
+
+        .candidate-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap; /* Added for responsiveness */
+        }
+
+        .view-cv-btn {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .view-cv-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(116, 185, 255, 0.4);
+        }
+
+        /* Botón de favoritos */
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 50%;
+            color: #ccc;
+        }
+
+        .favorite-btn:hover {
+            background: rgba(243, 156, 18, 0.1);
+            transform: scale(1.2);
+        }
+
+        .favorite-btn.active {
+            color: #f39c12;
+            animation: pulse 0.6s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* Vista de lista */
+        .candidate-list-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .candidate-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .candidate-list-item.favorite {
+            border-left: 4px solid #f39c12;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffffff 100%);
+        }
+
+        /* Mensajes de estado */
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .message-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification.success {
+            background: #28a745;
+        }
+
+        .notification.error {
+            background: #e74c3c;
+        }
+
+        .notification.warning {
+            background: #f39c12;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Dashboard del Reclutador</h1>
+            <p>Encuentra el talento perfecto para tu equipo.</p>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <h2>Filtros</h2>
+                
+                <div class="favorites-filter">
+                    <button class="favorites-toggle" id="favoritesToggle">
+                        ⭐ Ver Solo Favoritos
+                    </button>
+                </div>
+
+                <div class="filter-group">
+                    <label>Habilidades:</label>
+                    <div id="skillsContainer" class="skills-list">
+                        <div id="loadingSkills" class="message-info" style="display:none; text-align:center;">Cargando habilidades...</div>
+                        <div id="noSkillsMessage" class="message-error" style="display:none; text-align:center;">No se encontraron habilidades. Sube CVs primero.</div>
+                    </div>
+                </div>
+                <button id="filterButton" class="filter-button">Aplicar Filtros</button>
+                <div id="filterStatusMessage" style="margin-top: 15px;"></div>
+
+                <hr style="margin: 25px 0;">
+                <div class="folder-management">
+                    <h3>Gestionar Carpetas</h3>
+                    <input type="text" id="newFolderName" placeholder="Nombre nueva carpeta" class="input-field">
+                    <button id="createFolderBtn" class="action-button primary">Crear Carpeta</button>
+                    <div id="folderCreationMessage" class="message-area"></div>
+                    
+                    <h4>Mis Carpetas</h4>
+                    <ul id="foldersList" class="folder-list">
+                        </ul>
+
+                    <h4 style="margin-top: 20px;">Filtrar por Carpeta</h4>
+                    <select id="folderFilterSelect" class="select-field">
+                        <option value="">Todas las Carpetas</option>
+                        </select>
+                    <button id="applyFolderFilterBtn" class="action-button secondary">Aplicar Filtro de Carpeta</button>
+                </div>
+                </aside>
+
+            <section class="content">
+                <div class="content-header">
+                    <div class="results-summary">
+                        Candidatos mostrados: <span id="filteredCandidates">0</span> / <span id="totalCandidates">0</span>
+                    </div>
+                    <div class="view-options">
+                        <button class="btn view-btn active" data-view="grid">Grid</button>
+                        <button class="btn view-btn" data-view="list">Lista</button>
+                    </div>
+                </div>
+
+                <div id="candidateList" class="candidate-list">
+                    <div id="loadingCandidates" class="message-info" style="display:none; text-align:center;">Cargando candidatos...</div>
+                    <div id="noCandidatesMessage" class="message-info" style="display:none; text-align:center;">Aplica filtros para ver resultados.</div>
+                    <div id="noResultsMessage" class="message-error" style="display:none; text-align:center;">No se encontraron candidatos con los filtros aplicados.</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+
+        // Variables globales
+        let allSkills = [];
+        let selectedSkills = new Set();
+        let allCandidates = [];
+        let displayedCandidates = [];
+        let currentTotalCandidates = 0;
+        let showOnlyFavorites = false;
+        let currentView = 'grid';
+        let allFolders = []; // Almacenará todas las carpetas
+
+        // Inicializar el botón correctamente
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('favoritesToggle');
+            button.textContent = '⭐ Ver Solo Favoritos';
+            button.classList.remove('active');
+        });
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            setupEventListeners();
+            await loadSkills();
+            await loadFolders();
+            await updateCandidateStats();
+            document.getElementById('noCandidatesMessage').style.display = 'block';
+            await loadCvs(); // Carga inicial de todos los CVs
+        });
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            document.getElementById('filterButton').addEventListener('click', filterCandidates);
+            document.getElementById('favoritesToggle').addEventListener('click', toggleFavoritesFilter);
+            
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const view = e.target.dataset.view;
+                    toggleView(view);
+                });
+            });
+
+            document.getElementById('createFolderBtn').addEventListener('click', createFolder);
+
+            document.getElementById('applyFolderFilterBtn').addEventListener('click', () => {
+                const selectedFolder = document.getElementById('folderFilterSelect').value;
+                selectedSkills.clear();
+                document.querySelectorAll('.skill-item').forEach(el => el.classList.remove('selected'));
+                loadCvs(selectedFolder === "" ? null : selectedFolder);
+            });
+        }
+
+        // Funciones de utilidad para mensajes
+        function displayStatusMessage(elementId, message, type, show = true) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.className = 'message-' + type; 
+                element.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        function hideAllMessages(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const messages = container.querySelectorAll('[id*="loading"], [id*="noSkills"], [id*="noCandidates"], [id*="noResults"]');
+                messages.forEach(msg => msg.style.display = 'none');
+            }
+        }
+
+        // Cargar habilidades
+        async function loadSkills() {
+            hideAllMessages('skillsContainer');
+            displayStatusMessage('loadingSkills', 'Cargando habilidades...', 'info', true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/skills`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allSkills = await response.json();
+                renderSkills();
+                
+                if (allSkills.length === 0) {
+                    displayStatusMessage('noSkillsMessage', 'No se encontraron habilidades. Sube CVs primero.', 'error', true);
+                } else {
+                    hideAllMessages('skillsContainer');
+                }
+            } catch (error) {
+                console.error('Error al cargar habilidades:', error);
+                displayStatusMessage('noSkillsMessage', 'Error al cargar habilidades. Inténtalo de nuevo.', 'error', true);
+            }
+        }
+
+        // Renderizar habilidades
+        function renderSkills() {
+            const skillsContainer = document.getElementById('skillsContainer');
+            skillsContainer.innerHTML = '';
+
+            allSkills.forEach(skill => {
+                const skillItem = document.createElement('div');
+                skillItem.classList.add('skill-item');
+                skillItem.textContent = skill;
+                skillItem.dataset.skill = skill;
+                skillItem.addEventListener('click', () => toggleSkillSelection(skillItem, skill));
+                skillsContainer.appendChild(skillItem);
+            });
+        }
+
+        // Toggle selección de habilidad
+        function toggleSkillSelection(element, skill) {
+            if (selectedSkills.has(skill)) {
+                selectedSkills.delete(skill);
+                element.classList.remove('selected');
+            } else {
+                selectedSkills.add(skill);
+                element.classList.add('selected');
+            }
+        }
+
+        // Obtener estadísticas actualizadas
+        async function updateCandidateStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/candidates_count`);
+                if (response.ok) {
+                    const data = await response.json();
+                    currentTotalCandidates = data.total || 0;
+                    document.getElementById('totalCandidates').textContent = currentTotalCandidates;
+                }
+            } catch (error) {
+                console.error('Error al obtener estadísticas:', error);
+            }
+        }
+
+        // Cargar carpetas
+        async function loadFolders() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/folders`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allFolders = await response.json();
+                renderFolders();
+            } catch (error) {
+                console.error('Error al cargar carpetas:', error);
+                showNotification('Error al cargar carpetas.', 'error');
+            }
+        }
+
+        // Renderizar carpetas
+        function renderFolders() {
+            const foldersList = document.getElementById('foldersList');
+            const folderFilterSelect = document.getElementById('folderFilterSelect');
+            foldersList.innerHTML = '';
+            
+            while (folderFilterSelect.children.length > 1) {
+                folderFilterSelect.removeChild(folderFilterSelect.lastChild);
+            }
+
+            allFolders.forEach(folder => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    ${folder.name} 
+                    <button class="delete-folder-btn" data-folder-id="${folder._id}" data-folder-name="${folder.name}">Eliminar</button>
+                `;
+                foldersList.appendChild(li);
+
+                const option = document.createElement('option');
+                option.value = folder.name;
+                option.textContent = folder.name;
+                folderFilterSelect.appendChild(option);
+            });
+
+            document.querySelectorAll('.delete-folder-btn').forEach(button => {
+                button.addEventListener('click', async (event) => {
+                    const folderId = event.target.dataset.folderId;
+                    const folderName = event.target.dataset.folderName;
+                    if (confirm(`¿Estás seguro de eliminar la carpeta "${folderName}"? Esto desvinculará los CVs.`)) {
+                        await deleteFolder(folderId);
+                    }
+                });
+            });
+        }
+
+        // Crear carpeta
+        async function createFolder() {
+            const folderNameInput = document.getElementById('newFolderName');
+            const folderName = folderNameInput.value.trim();
+            const folderCreationMessage = document.getElementById('folderCreationMessage');
+
+            if (!folderName) {
+                displayStatusMessage('folderCreationMessage', 'Por favor, ingresa un nombre para la carpeta.', 'error', true);
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/folders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: folderName })
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayStatusMessage('folderCreationMessage', data.message, 'success', true);
+                    folderNameInput.value = '';
+                    await loadFolders();
+                    showNotification(data.message, 'success');
+                } else {
+                    displayStatusMessage('folderCreationMessage', `Error: ${data.message}`, 'error', true);
+                    showNotification(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error al crear carpeta:', error);
+                displayStatusMessage('folderCreationMessage', 'Error de conexión al crear carpeta.', 'error', true);
+                showNotification('Error de conexión al crear carpeta.', 'error');
+            }
+        }
+
+        // Eliminar carpeta
+        async function deleteFolder(folderId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/folders/${folderId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification(data.message, 'success');
+                    await loadFolders();
+                    await loadCvs(document.getElementById('folderFilterSelect').value);
+                } else {
+                    showNotification(`Error al eliminar carpeta: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error al eliminar carpeta:', error);
+                showNotification('Error de conexión al eliminar carpeta.', 'error');
+            }
+        }
+
+        // Cargar CVs, con opción de filtrar por carpeta o habilidades
+        async function loadCvs(filterByFolder = null) {
+            hideAllMessages('candidateList');
+            displayStatusMessage('loadingCandidates', 'Cargando candidatos...', 'info', true);
+
+            let url = `${API_BASE_URL}/filter_cvs`;
+            let body = { skills: [] }; 
+
+            if (filterByFolder) {
+                url = `${API_BASE_URL}/filter_cvs_by_folder`;
+                body = { folder_name: filterByFolder };
+            } else if (selectedSkills.size > 0) {
+                url = `${API_BASE_URL}/filter_cvs`;
+                body = { skills: Array.from(selectedSkills) };
+            } else {
+                url = `${API_BASE_URL}/filter_cvs`;
+                body = { skills: [] };
+            }
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allCandidates = await response.json();
+                applyDisplayFilters();
+            } catch (error) {
+                console.error('Error al cargar/filtrar CVs:', error);
+                displayStatusMessage('noResultsMessage', 'Error al cargar candidatos. Inténtalo de nuevo.', 'error', true);
+                displayStatusMessage('filterStatusMessage', 'Error al aplicar filtros.', 'error', true);
+                allCandidates = [];
+                applyDisplayFilters();
+            } finally {
+                if (allCandidates.length === 0) {
+                     displayStatusMessage('noResultsMessage', 'No se encontraron candidatos con los filtros aplicados.', 'error', true);
+                } else {
+                    hideAllMessages('candidateList');
+                }
+            }
+        }
+
+
+        // Modificación de filterCandidates para usar loadCvs
+        async function filterCandidates() {
+            const selectedFolder = document.getElementById('folderFilterSelect').value;
+            document.getElementById('folderFilterSelect').value = ""; 
+            await loadCvs(null);
+        }
+
+
+        // Aplicar filtros de visualización (favoritos y habilidades)
+        function applyDisplayFilters() {
+            let filtered = allCandidates;
+            
+            const activeFolderFilter = document.getElementById('folderFilterSelect').value;
+            if (selectedSkills.size > 0 && !activeFolderFilter) {
+                filtered = filtered.filter(candidate => 
+                    Array.from(selectedSkills).every(skill => 
+                        candidate.skills && candidate.skills.map(s => s.toLowerCase()).includes(skill.toLowerCase())
+                    )
+                );
+            }
+            
+            // Filtro por favoritos (usa el campo .Fav del backend)
+            if (showOnlyFavorites) {
+                filtered = filtered.filter(candidate => candidate.Fav === true);
+            }
+            
+            displayedCandidates = filtered;
+            renderCandidates();
+            updateDisplayCounts(displayedCandidates.length);
+
+            if (displayedCandidates.length === 0) {
+                displayStatusMessage('noResultsMessage', 'No se encontraron candidatos con los filtros aplicados.', 'error', true);
+            } else {
+                hideAllMessages('candidateList');
+            }
+        }
+
+        // Generar ID único para candidato
+        function generateCandidateId(candidate) {
+            return candidate.filename || candidate.original_filename || 'unknown';
+        }
+
+        // Actualizar contadores
+        function updateDisplayCounts(filtered) {
+            document.getElementById('filteredCandidates').textContent = filtered;
+        }
+
+        // Renderizar candidatos
+        function renderCandidates() {
+            const candidateList = document.getElementById('candidateList');
+            candidateList.innerHTML = '';
+
+            if (displayedCandidates.length === 0) {
+                return;
+            }
+
+            candidateList.className = currentView === 'list' ? 'candidate-list list-view' : 'candidate-list';
+
+            displayedCandidates.forEach(cv => {
+                const candidateId = generateCandidateId(cv);
+                
+                if (currentView === 'grid') {
+                    const card = createCandidateCard(cv, candidateId);
+                    candidateList.appendChild(card);
+                } else {
+                    const listItem = createCandidateListItem(cv, candidateId);
+                    candidateList.appendChild(listItem);
+                }
+            });
+        }
+
+        // Crear tarjeta de candidato (vista grid)
+        function createCandidateCard(cv, candidateId) {
+            const isFavorite = cv.Fav; // Usamos el dato del backend
+            const card = document.createElement('div');
+            card.classList.add('candidate-card');
+            if (isFavorite) card.classList.add('favorite');
+
+            card.innerHTML = `
+                <div class="candidate-header">
+                    <div class="candidate-info">
+                        <h3>${cv.original_filename || cv.filename || 'CV'}</h3>
+                    </div>
+                    <button class="favorite-btn ${isFavorite ? 'active' : ''}" 
+                            title="${isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+                        ${isFavorite ? '⭐' : '☆'}
+                    </button>
+                </div>
+                <div class="candidate-skills">
+                    ${cv.skills && cv.skills.length > 0 ? cv.skills.map(skill => `<span class="candidate-skill">${skill}</span>`).join('') : 'Sin habilidades'}
+                </div>
+                <div class="candidate-folders">
+                    <strong>Carpetas:</strong> 
+                    ${cv.folders && cv.folders.length > 0 ? cv.folders.map(folder => `<span class="folder-tag">${folder}</span>`).join('') : 'Ninguna'}
+                </div>
+                <div class="candidate-actions">
+                    <button class="view-cv-btn">Ver CV</button>
+                    <button class="delete-cv-btn">Eliminar CV</button>
+                    <select class="assign-folder-select" data-filename="${cv.filename || cv.original_filename}">
+                        <option value="">Asignar a carpeta...</option>
+                        </select>
+                </div>
+            `;
+
+            card.querySelector('.favorite-btn').addEventListener('click', () => toggleFavorite(candidateId));
+            card.querySelector('.view-cv-btn').addEventListener('click', () => {
+                const filename = cv.filename || cv.original_filename;
+                if (filename) {
+                    window.open(`${API_BASE_URL}/view_cv/${encodeURIComponent(filename)}`, '_blank');
+                }
+            });
+            card.querySelector('.delete-cv-btn').addEventListener('click', () => deleteCandidate(candidateId, card));
+
+            const assignFolderSelect = card.querySelector('.assign-folder-select');
+            populateAssignFolderSelect(assignFolderSelect, cv.folders || []);
+            assignFolderSelect.addEventListener('change', async (event) => {
+                const selectedFolder = event.target.value;
+                const cvFilename = event.target.dataset.filename;
+                if (selectedFolder) {
+                    await assignCvToFolder(cvFilename, [selectedFolder]);
+                }
+            });
+
+            return card;
+        }
+
+        // Crear elemento de lista (vista lista)
+        function createCandidateListItem(cv, candidateId) {
+            const isFavorite = cv.Fav; // Usamos el dato del backend
+            const item = document.createElement('div');
+            item.classList.add('candidate-list-item');
+            if (isFavorite) item.classList.add('favorite');
+
+            item.innerHTML = `
+                <div>
+                    <h4>${cv.original_filename || cv.filename || 'CV'}</h4>
+                    <div style="margin-top: 5px;">
+                        ${cv.skills && cv.skills.length > 0 ? cv.skills.map(skill => `<span class="candidate-skill" style="margin-right: 5px;">${skill}</span>`).join('') : 'Sin habilidades'}
+                    </div>
+                    <div class="candidate-folders" style="margin-top: 5px;">
+                        <strong>Carpetas:</strong> 
+                        ${cv.folders && cv.folders.length > 0 ? cv.folders.map(folder => `<span class="folder-tag">${folder}</span>`).join('') : 'Ninguna'}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="favorite-btn ${isFavorite ? 'active' : ''}" 
+                            title="${isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+                        ${isFavorite ? '⭐' : '☆'}
+                    </button>
+                    <button class="view-cv-btn">Ver CV</button>
+                    <button class="delete-cv-btn">Eliminar CV</button>
+                     <select class="assign-folder-select" data-filename="${cv.filename || cv.original_filename}">
+                        <option value="">Asignar a carpeta...</option>
+                        </select>
+                </div>
+            `;
+
+            item.querySelector('.favorite-btn').addEventListener('click', () => toggleFavorite(candidateId));
+            item.querySelector('.view-cv-btn').addEventListener('click', () => {
+                const filename = cv.filename || cv.original_filename;
+                if (filename) {
+                    window.open(`${API_BASE_URL}/view_cv/${encodeURIComponent(filename)}`, '_blank');
+                }
+            });
+            item.querySelector('.delete-cv-btn').addEventListener('click', () => deleteCandidate(candidateId, item));
+
+            const assignFolderSelect = item.querySelector('.assign-folder-select');
+            populateAssignFolderSelect(assignFolderSelect, cv.folders || []);
+            assignFolderSelect.addEventListener('change', async (event) => {
+                const selectedFolder = event.target.value;
+                const cvFilename = event.target.dataset.filename;
+                if (selectedFolder) {
+                    await assignCvToFolder(cvFilename, [selectedFolder]);
+                }
+            });
+
+            return item;
+        }
+
+        // Helper para poblar selectores de asignación de carpetas
+        async function populateAssignFolderSelect(selectElement, currentFolders = []) {
+            while (selectElement.children.length > 1) {
+                selectElement.removeChild(selectElement.lastChild);
+            }
+            allFolders.forEach(folder => {
+                const option = document.createElement('option');
+                option.value = folder.name;
+                option.textContent = folder.name;
+                if (currentFolders.includes(folder.name)) {
+                    option.textContent += ' (asignado)';
+                }
+                selectElement.appendChild(option);
+            });
+        }
+
+        // Función para asignar CV a carpeta
+        async function assignCvToFolder(filename, folderNames) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/cvs/${encodeURIComponent(filename)}/assign_to_folder`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folder_names: folderNames })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showNotification(`CV asignado: ${data.message}`, 'success');
+                    await loadCvs(document.getElementById('folderFilterSelect').value);
+                } else {
+                    showNotification(`Error al asignar CV: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error al asignar CV a carpeta:', error);
+                showNotification('Error de conexión al asignar CV a carpeta.', 'error');
+            }
+        }
+        
+        // **NUEVA FUNCIÓN** para cambiar el estado de favorito comunicándose con el backend
+        async function toggleFavorite(candidateId) {
+            try {
+                // Llama al nuevo endpoint en el backend
+                const response = await fetch(`${API_BASE_URL}/cvs/${candidateId}/toggle_favorite`, {
+                    method: 'POST'
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Si el backend tiene éxito, actualiza el dato localmente
+                    const candidate = allCandidates.find(c => generateCandidateId(c) === candidateId);
+                    if (candidate) {
+                        candidate.Fav = data.new_status; // Actualiza el estado en el array principal
+                    }
+                    
+                    // Muestra la notificación del backend
+                    showNotification(data.message, 'success');
+                    
+                    // Vuelve a renderizar la lista de candidatos con el dato actualizado
+                    applyDisplayFilters(); 
+                } else {
+                    showNotification(`Error: ${data.message}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error al cambiar estado de favorito:', error);
+                showNotification('Error de conexión al marcar favorito.', 'error');
+            }
+        }
+
+        // Función para eliminar candidato
+        async function deleteCandidate(candidateId, element) {
+            const candidate = allCandidates.find(cv => generateCandidateId(cv) === candidateId);
+            
+            if (!candidate) {
+                showNotification("Error: No se encontró el candidato", "error");
+                return;
+            }
+
+            const filename = candidate.filename; 
+
+            if (!filename) {
+                showNotification("Error: No se encontró el archivo del candidato", "error");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/delete_cv/${encodeURIComponent(filename)}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    element.remove();
+                    allCandidates = allCandidates.filter(cv => generateCandidateId(cv) !== candidateId);
+                    displayedCandidates = displayedCandidates.filter(cv => generateCandidateId(cv) !== candidateId);
+                    updateDisplayCounts(displayedCandidates.length);
+                    await updateCandidateStats(); 
+                    await loadSkills();
+                    await loadFolders();
+                    showNotification("Candidato eliminado exitosamente", "success");
+
+                    if (displayedCandidates.length === 0) {
+                        displayStatusMessage('noResultsMessage', 'No se encontraron candidatos con los filtros aplicados.', 'error', true);
+                    }
+                } else {
+                    const errorData = await response.json();
+                    showNotification(`Error al eliminar: ${errorData.message}`, "error");
+                }
+            } catch (error) {
+                console.error('Error al eliminar candidato:', error);
+                showNotification("Error de conexión al eliminar candidato", "error");
+            }
+        }
+
+        // Toggle filtro de favoritos
+        function toggleFavoritesFilter() {
+            showOnlyFavorites = !showOnlyFavorites;
+            const button = document.getElementById('favoritesToggle');
+            
+            if (showOnlyFavorites) {
+                button.textContent = 'Ver Solo Favoritos';
+                button.classList.add('active');
+            } else {
+                button.textContent = 'Ver Todos';
+                button.classList.remove('active');
+            }
+            document.getElementById('folderFilterSelect').value = ""; 
+            selectedSkills.clear();
+            document.querySelectorAll('.skill-item').forEach(el => el.classList.remove('selected'));
+
+            applyDisplayFilters();
+        }
+
+        // Cambiar vista
+        function toggleView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.view === view) {
+                    btn.classList.add('active');
+                }
+            });
+            renderCandidates();
+        }
+
+        // Función para mostrar notificaciones con tipo
+        function showNotification(message, type = 'success') {
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

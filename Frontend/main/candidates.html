@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMatch - Sube tu CV</title>
+    <style>
+        /* Estilos generales del cuerpo */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+            display: flex; /* Para centrar el contenido */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #333; /* Cambiado a un color que contraste con el fondo blanco del container */
+        }
+
+        .header h1 {
+            font-size: 2.5em; /* Ajustado el tamaño */
+            margin-bottom: 10px;
+            text-shadow: none; /* Eliminado el text-shadow para que se vea mejor */
+            color: #4a4a4a;
+        }
+
+        .header p {
+            font-size: 1.1em; /* Ajustado el tamaño */
+            opacity: 0.8;
+            color: #555;
+        }
+
+        /* Estilos para el formulario de subida */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+        }
+
+        .form-group small {
+            color: #777;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .primary-btn {
+            background-color: #667eea;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .primary-btn:hover {
+            background-color: #5a6ed0;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Estilos para el nuevo mensaje */
+        #uploadMessage {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            text-align: center;
+            display: none; /* Oculto por defecto */
+        }
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .message-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        /*estilos de favoritos*/
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Sube tu CV</h1>
+            <p>Por favor, sube tu CV(s) en formato PDF. Puedes subir varios a la vez.</p>
+        </header>
+
+        <div class="form-section">
+            <form id="cvUploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="cvFiles">Seleccionar CV(s) (PDF):</label>
+                    <input type="file" id="cvFiles" name="cvs" accept=".pdf" multiple required>
+                    <small>Puedes seleccionar uno o varios archivos PDF.</small>
+                </div>
+                <button type="submit" class="btn primary-btn">Subir CV(s)</button>
+            </form>
+            <div id="uploadMessage"></div> </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cvUploadForm = document.getElementById('cvUploadForm');
+            const cvFilesInput = document.getElementById('cvFiles');
+            const uploadMessageDiv = document.getElementById('uploadMessage');
+
+            // Función para mostrar mensajes de estado
+            function displayMessage(message, type) {
+                uploadMessageDiv.textContent = message;
+                uploadMessageDiv.className = ''; // Limpiar clases existentes
+                uploadMessageDiv.classList.add('message-' + type);
+                uploadMessageDiv.style.display = 'block'; // Asegurarse de que sea visible
+            }
+
+            if (cvUploadForm) { // Asegúrate de que el formulario exista
+                cvUploadForm.addEventListener('submit', async (event) => {
+                    event.preventDefault(); // Evita el envío tradicional del formulario
+
+                    const files = cvFilesInput.files;
+                    if (files.length === 0) {
+                        displayMessage('Por favor, selecciona al menos un archivo PDF.', 'error');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    for (let i = 0; i < files.length; i++) {
+                        formData.append('cvs', files[i]); // 'cvs' es el nombre que tu Flask espera
+                    }
+
+                    displayMessage('Subiendo CV(s)...', 'info');
+
+                    try {
+                        const response = await fetch('http://127.0.0.1:5000/upload_cvs', { //
+                            method: 'POST',
+                            body: formData,
+                            // El navegador establecerá automáticamente el Content-Type: multipart/form-data
+                            // cuando se usa FormData, no lo especifiques manualmente.
+                        });
+
+                        const data = await response.json(); // Parsea la respuesta JSON
+
+                        if (response.ok) { // Si la respuesta es exitosa (status 200-299)
+                            displayMessage(data.message, 'success');
+                            cvUploadForm.reset(); // Limpia el formulario
+                        } else {
+                            // Si hay un error del servidor (status 400-599)
+                            displayMessage(`Error: ${data.message || 'Error desconocido al subir.'}`, 'error');
+                        }
+                    } catch (error) {
+                        console.error('Error al subir los CVs:', error);
+                        displayMessage('Error de conexión o de red. Inténtalo de nuevo.', 'error');
+                    }
+                });
+            }
+        });
+
+    </script>
+</body>
+</html>

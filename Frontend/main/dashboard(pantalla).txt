@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindMatch - Dashboard Reclutador</title>
+    <style>
+        /* Reset y estilos generales */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.8;
+            color: #555;
+        }
+
+        /* Main content layout */
+        .main-content {
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Sidebar de filtros */
+        .sidebar {
+            flex: 0 0 300px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+
+        .sidebar h2 {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #4a4a4a;
+        }
+
+        .filter-group {
+            margin-bottom: 25px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #555;
+            font-size: 1.1em;
+        }
+
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .skill-item {
+            display: flex;
+            align-items: center;
+            background-color: #e0e0e0;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 0.95em;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .skill-item:hover {
+            background-color: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .skill-item.selected {
+            background-color: #667eea;
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+        }
+
+        .filter-button {
+            display: block;
+            width: 100%;
+            padding: 12px 20px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .filter-button:hover {
+            background-color: #5a6ed0;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        /* Favoritos toggle */
+        .favorites-filter {
+            margin-bottom: 20px;
+        }
+
+        .favorites-toggle {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .favorites-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(243, 156, 18, 0.4);
+        }
+
+        .favorites-toggle.active {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+        }
+
+        /* Contenido principal (resultados) */
+        .content {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-summary {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4a4a4a;
+        }
+
+        .view-options .btn {
+            background-color: #f0f0f0;
+            color: #555;
+            padding: 8px 15px;
+            border-radius: 8px;
+            margin-left: 10px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .view-options .btn.active {
+            background-color: #667eea;
+            color: white;
+        }
+
+        /* Lista de candidatos (resultados) */
+        .candidate-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .candidate-list.list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .candidate-card {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .candidate-card.favorite {
+            border-left: 4px solid #f39c12;
+        }
+
+        .candidate-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .candidate-card h3 {
+            font-size: 1.4em;
+            color: #333;
+            margin: 0;
+        }
+
+        .candidate-card p {
+            font-size: 0.95em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .candidate-skills {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .candidate-skill {
+            background-color: #e6f0ff;
+            color: #3366cc;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .candidate-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .action-btn.view {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .action-btn.view:hover {
+            background-color: #5a6ed0;
+        }
+
+        .view-cv-btn {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .view-cv-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(116, 185, 255, 0.4);
+        }
+
+        /* Botón de favoritos */
+        .favorite-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px;
+            border-radius: 50%;
+        }
+
+        .favorite-btn:hover {
+            background: rgba(243, 156, 18, 0.1);
+            transform: scale(1.2);
+        }
+
+        .favorite-btn.active {
+            color: #f39c12;
+            animation: pulse 0.6s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* Vista de lista */
+        .candidate-list-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .candidate-list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .candidate-list-item.favorite {
+            border-left: 4px solid #f39c12;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 80%;
+            max-width: 700px;
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+        }
+
+        #cvModalContent iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+
+        /* Mensajes de estado */
+        .message-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .message-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .message-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        /* Notificaciones */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Dashboard del Reclutador</h1>
+            <p>Encuentra el talento perfecto para tu equipo.</p>
+        </header>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <h2>Filtros</h2>
+                
+                <div class="favorites-filter">
+                    <button class="favorites-toggle" id="favoritesToggle">
+                        ⭐ Ver Solo Favoritos
+                    </button>
+                </div>
+
+                <div class="filter-group">
+                    <label>Habilidades:</label>
+                    <div id="skillsContainer" class="skills-list">
+                        <div id="loadingSkills" class="message-info" style="display:none; text-align:center;">Cargando habilidades...</div>
+                        <div id="noSkillsMessage" class="message-error" style="display:none; text-align:center;">No se encontraron habilidades. Sube CVs primero.</div>
+                    </div>
+                </div>
+                <button id="filterButton" class="filter-button">Aplicar Filtros</button>
+                <div id="filterStatusMessage" style="margin-top: 15px;"></div>
+            </aside>
+
+            <section class="content">
+                <div class="content-header">
+                    <div class="results-summary">
+                        Candidatos mostrados: <span id="filteredCandidates">0</span> / <span id="totalCandidates">0</span>
+                    </div>
+                    <div class="view-options">
+                        <button class="btn view-btn active" data-view="grid">Grid</button>
+                        <button class="btn view-btn" data-view="list">Lista</button>
+                    </div>
+                </div>
+
+                <div id="candidateList" class="candidate-list">
+                    <div id="loadingCandidates" class="message-info" style="display:none; text-align:center;">Cargando candidatos...</div>
+                    <div id="noCandidatesMessage" class="message-info" style="display:none; text-align:center;">Aplica filtros para ver resultados.</div>
+                    <div id="noResultsMessage" class="message-error" style="display:none; text-align:center;">No se encontraron candidatos con los filtros aplicados.</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div id="cvModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h2 id="modalTitle">Visualizar CV</h2>
+            <div id="cvModalContent"></div>
+            <div id="cvModalActions" style="margin-top: 20px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+
+        // Variables globales
+        let allSkills = [];
+        let selectedSkills = new Set();
+        let allCandidates = [];
+        let displayedCandidates = [];
+        let currentTotalCandidates = 0;
+        let showOnlyFavorites = false;
+        let currentView = 'grid';
+        let favoriteIds = new Set();
+
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadFavorites();
+            setupEventListeners();
+            await loadSkills();
+            await updateCandidateStats();
+            document.getElementById('noCandidatesMessage').style.display = 'block';
+        });
+
+        // Cargar favoritos del localStorage
+        function loadFavorites() {
+            const saved = localStorage.getItem('candidateFavorites');
+            if (saved) {
+                favoriteIds = new Set(JSON.parse(saved));
+            }
+        }
+
+        // Guardar favoritos en localStorage
+        function saveFavorites() {
+            localStorage.setItem('candidateFavorites', JSON.stringify([...favoriteIds]));
+        }
+
+        // Configurar event listeners
+        function setupEventListeners() {
+            // Botón de filtros
+            document.getElementById('filterButton').addEventListener('click', filterCandidates);
+            
+            // Toggle de favoritos
+            document.getElementById('favoritesToggle').addEventListener('click', toggleFavoritesFilter);
+            
+            // Botones de vista
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const view = e.target.dataset.view;
+                    toggleView(view);
+                });
+            });
+
+            // Modal
+            const modal = document.getElementById('cvModal');
+            const closeBtn = document.querySelector('.close-button');
+            closeBtn.addEventListener('click', closeModal);
+            
+            window.addEventListener('click', (event) => {
+                if (event.target === modal) {
+                    closeModal();
+                }
+            });
+        }
+
+        // Funciones de utilidad para mensajes
+        function displayStatusMessage(elementId, message, type, show = true) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+                element.className = 'message-' + type;
+                element.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        function hideAllMessages(containerId) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const messages = container.querySelectorAll('[id*="loading"], [id*="noSkills"], [id*="noCandidates"], [id*="noResults"]');
+                messages.forEach(msg => msg.style.display = 'none');
+            }
+        }
+
+        // Cargar habilidades
+        async function loadSkills() {
+            hideAllMessages('skillsContainer');
+            displayStatusMessage('loadingSkills', 'Cargando habilidades...', 'info', true);
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/skills`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allSkills = await response.json();
+                renderSkills();
+                
+                if (allSkills.length === 0) {
+                    displayStatusMessage('noSkillsMessage', 'No se encontraron habilidades. Sube CVs primero.', 'error', true);
+                } else {
+                    hideAllMessages('skillsContainer');
+                }
+            } catch (error) {
+                console.error('Error al cargar habilidades:', error);
+                displayStatusMessage('noSkillsMessage', 'Error al cargar habilidades. Inténtalo de nuevo.', 'error', true);
+            }
+        }
+
+        // Renderizar habilidades
+        function renderSkills() {
+            const skillsContainer = document.getElementById('skillsContainer');
+            skillsContainer.innerHTML = '';
+
+            allSkills.forEach(skill => {
+                const skillItem = document.createElement('div');
+                skillItem.classList.add('skill-item');
+                skillItem.textContent = skill;
+                skillItem.dataset.skill = skill;
+                skillItem.addEventListener('click', () => toggleSkillSelection(skillItem, skill));
+                skillsContainer.appendChild(skillItem);
+            });
+        }
+
+        // Toggle selección de habilidad
+        function toggleSkillSelection(element, skill) {
+            if (selectedSkills.has(skill)) {
+                selectedSkills.delete(skill);
+                element.classList.remove('selected');
+            } else {
+                selectedSkills.add(skill);
+                element.classList.add('selected');
+            }
+        }
+
+        // Filtrar candidatos
+        async function filterCandidates() {
+            hideAllMessages('candidateList');
+            displayStatusMessage('loadingCandidates', 'Filtrando candidatos...', 'info', true);
+            displayStatusMessage('filterStatusMessage', '', 'info', false);
+
+            const skillsArray = Array.from(selectedSkills);
+
+            if (skillsArray.length === 0 && !showOnlyFavorites) {
+                displayStatusMessage('noCandidatesMessage', 'Selecciona al menos una habilidad para filtrar.', 'info', true);
+                displayStatusMessage('filterStatusMessage', 'Por favor, selecciona habilidades para filtrar.', 'error', true);
+                updateDisplayCounts(0);
+                document.getElementById('candidateList').innerHTML = '';
+                return;
+            }
+
+            try {
+                if (skillsArray.length > 0) {
+                    const response = await fetch(`${API_BASE_URL}/filter_cvs`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ skills: skillsArray }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    allCandidates = await response.json();
+                } else {
+                    // Si solo queremos favoritos sin filtro de habilidades, necesitamos todos los CVs
+                    allCandidates = [];
+                }
+
+                applyDisplayFilters();
+                
+            } catch (error) {
+                console.error('Error al filtrar candidatos:', error);
+                displayStatusMessage('noResultsMessage', 'Error al filtrar candidatos. Inténtalo de nuevo.', 'error', true);
+                displayStatusMessage('filterStatusMessage', 'Error al aplicar filtros.', 'error', true);
+                allCandidates = [];
+                applyDisplayFilters();
+            }
+        }
+
+        // Aplicar filtros de visualización (favoritos)
+        function applyDisplayFilters() {
+            displayedCandidates = allCandidates.filter(candidate => {
+                const candidateId = generateCandidateId(candidate);
+                if (showOnlyFavorites) {
+                    return favoriteIds.has(candidateId);
+                }
+                return true;
+            });
+
+            renderCandidates();
+            updateDisplayCounts(displayedCandidates.length);
+
+            if (displayedCandidates.length === 0) {
+                const message = showOnlyFavorites ? 
+                    'No tienes candidatos favoritos con los filtros aplicados.' : 
+                    'No se encontraron candidatos con los filtros aplicados.';
+                displayStatusMessage('noResultsMessage', message, 'error', true);
+                displayStatusMessage('filterStatusMessage', message, 'error', true);
+            } else {
+                hideAllMessages('candidateList');
+                const message = showOnlyFavorites ? 
+                    `Se encontraron ${displayedCandidates.length} candidatos favoritos.` :
+                    `Se encontraron ${displayedCandidates.length} candidatos.`;
+                displayStatusMessage('filterStatusMessage', message, 'success', true);
+            }
+        }
+
+        // Generar ID único para candidato
+        function generateCandidateId(candidate) {
+            return candidate.original_filename || candidate.filename || candidate.name || 'unknown';
+        }
+
+        // Renderizar candidatos
+        function renderCandidates() {
+            const candidateList = document.getElementById('candidateList');
+            candidateList.innerHTML = '';
+
+            if (displayedCandidates.length === 0) {
+                return;
+            }
+
+            // Aplicar clase de vista
+            candidateList.className = currentView === 'list' ? 'candidate-list list-view' : 'candidate-list';
+
+            displayedCandidates.forEach(cv => {
+                const candidateId = generateCandidateId(cv);
+                const isFavorite = favoriteIds.has(candidateId);
+
+                if (currentView === 'grid') {
+                    const card = createCandidateCard(cv, candidateId, isFavorite);
+                    candidateList.appendChild(card);
+                } else {
+                    const listItem = createCandidateListItem(cv, candidateId, isFavorite);
+                    candidateList.appendChild(listItem);
+                }
+            });
+        }
+
+        // Crear tarjeta de candidato (vista grid)
+        function createCandidateCard(cv, candidateId, isFavorite) {
+            const card = document.createElement('div');
+            card.classList.add('candidate-card');
+            if (isFavorite) card.classList.add('favorite');
+
+            card.innerHTML = `
+                <div class="candidate-header">
+                    <div class="candidate-info">
+                        <h3>${cv.original_filename || cv.filename || 'CV'}</h3>
+                    </div>
+                    <button class="favorite-btn ${isFavorite ? 'active' : ''}" 
+                            title="${isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+                        ${isFavorite ? '⭐' : '☆'}
+                    </button>
+                </div>
+                <div class="candidate-skills">
+                    ${cv.skills.map(skill => `<span class="candidate-skill">${skill}</span>`).join('')}
+                </div>
+                <div class="candidate-actions">
+                    <button class="view-cv-btn">Ver CV</button>
+                </div>
+            `;
+
+            // Event listeners
+            const favoriteBtn = card.querySelector('.favorite-btn');
+            favoriteBtn.addEventListener('click', () => toggleFavorite(candidateId));
+
+            const viewCvBtn = card.querySelector('.view-cv-btn');
+            viewCvBtn.addEventListener('click', () => openCvModal(cv.original_filename || cv.filename));
+
+            return card;
+        }
+
+        // Crear elemento de lista (vista lista)
+        function createCandidateListItem(cv, candidateId, isFavorite) {
+            const item = document.createElement('div');
+            item.classList.add('candidate-list-item');
+            if (isFavorite) item.classList.add('favorite');
+
+            item.innerHTML = `
+                <div>
+                    <h4>${cv.original_filename || cv.filename || 'CV'}</h4>
+                    <div style="margin-top: 5px;">
+                        ${cv.skills.map(skill => `<span class="candidate-skill" style="margin-right: 5px;">${skill}</span>`).join('')}
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="favorite-btn ${isFavorite ? 'active' : ''}" 
+                            title="${isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
+                        ${isFavorite ? '⭐' : '☆'}
+                    </button>
+                    <button class="view-cv-btn">Ver CV</button>
+                </div>
+            `;
+
+            // Event listeners
+            const favoriteBtn = item.querySelector('.favorite-btn');
+            favoriteBtn.addEventListener('click', () => toggleFavorite(candidateId));
+
+            const viewCvBtn = item.querySelector('.view-cv-btn');
+            viewCvBtn.addEventListener('click', () => openCvModal(cv.original_filename || cv.filename));
+
+            return item;
+        }
+
+        // Toggle favorito
+        function toggleFavorite(candidateId) {
+            if (favoriteIds.has(candidateId)) {
+                favoriteIds.delete(candidateId);
+                showNotification(`Candidato eliminado de favoritos`);
+            } else {
+                favoriteIds.add(candidateId);
+                showNotification(`Candidato añadido a favoritos ⭐`);
+            }
+            
+            saveFavorites();
+            applyDisplayFilters(); // Re-renderizar con el nuevo estado
+        }
+
+        // Toggle filtro de favoritos
+        function toggleFavoritesFilter() {
+            showOnlyFavorites = !showOnlyFavorites;
+            const button = document.getElementById('favoritesToggle');
+            
+            if (showOnlyFavorites) {
+                button.textContent = '👁️ Ver Todos';
+                button.classList.add('active');
+            } else {
+                button.textContent = '⭐ Ver Solo Favoritos';
+                button.classList.remove('active');
+            }
+            
+            applyDisplayFilters();
+        }
+
+        // Cambiar vista
+        function toggleView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.dataset.view === view) {
+                    btn.classList.add('active');
+                }
+            });
+            renderCandidates();
+        }
+
+        // Mostrar notificación
