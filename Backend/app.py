@@ -93,13 +93,7 @@ def extract_contact_info_from_text(text):
         if valid_phones:
             phone = valid_phones[0] # Tomamos el primer número de teléfono "válido"
 
-    # Expresión regular para nombres y apellidos.
-    # Esto es más complejo y propenso a errores sin un modelo de NLP robusto.
-    # Una aproximación simple podría ser buscar dos palabras capitalizadas al principio del texto.
-    # O buscar "Nombre:" "Apellido:", etc.
-    # Para mayor precisión, se necesitaría NLTK, SpaCy u otra librería de NLP.
-    # Aquí una aproximación muy básica que podría no ser perfecta:
-    # Buscar dos palabras capitalizadas que parezcan nombre y apellido
+
     name_pattern = r'([A-Z][a-z]+(?: [A-Z][a-z]+)*)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)*)'
     name_matches = re.search(name_pattern, text)
     
@@ -107,15 +101,7 @@ def extract_contact_info_from_text(text):
     last_name = None
 
     if name_matches:
-        # Esto intenta capturar un nombre y apellido juntos.
-        # Es muy básico y puede fallar si el formato es diferente.
-        # Podríamos intentar buscar líneas que contengan "Nombre:" o "Apellido:"
-        # Si el CV es estructurado, buscar después de etiquetas:
-        
-        # Una forma más robusta pero aún con regex sería buscar patrones comunes como:
-        # "Nombre: [nombre]" o el inicio de una línea
-        
-        # Intentemos una heurística común: las primeras 2-3 palabras capitalizadas en las primeras N líneas
+     
         lines = text.strip().split('\n')
         for line in lines[:5]: # Buscamos en las primeras 5 líneas
             # Buscar patrones como "Nombre: [Nombre]" o "Apellido: [Apellido]"
@@ -178,7 +164,7 @@ def upload_cvs():
                 extracted_text = extract_text_from_pdf(filepath)
                 identified_skills = extract_skills_from_text(extracted_text)
                 
-                # NEW: Extraer información de contacto aquí también
+                #  Extraer información de contacto aquí también
                 contact_info = extract_contact_info_from_text(extracted_text)
 
                 cv_data = {
@@ -189,8 +175,8 @@ def upload_cvs():
                     'skills': identified_skills,
                     'upload_date': datetime.now(),
                     'Fav': False,
-                    'folders': [], # NEW: Inicializa con una lista de carpetas vacía
-                    'contact_info': contact_info # NEW: Guardar la información de contacto
+                    'folders': [], # Inicializa con una lista de carpetas vacía
+                    'contact_info': contact_info #  Guardar la información de contacto
                 }
                 cv_collection.insert_one(cv_data)
                 uploaded_count += 1
@@ -278,7 +264,6 @@ def delete_cv(filename):
 
         if result.deleted_count > 0:
             try:
-                # Intenta eliminar el archivo físico usando el 'filename' guardado
                 file_path = os.path.join(app.config['UPLOAD_FOLDER'], cv_data.get('filename'))
                 if os.path.exists(file_path):
                     os.remove(file_path)
@@ -458,7 +443,7 @@ FRONTEND_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Fron
 
 @app.route('/')
 def index():
-     # Asumo que la ruta principal sigue sirviendo el index.html
+
      return send_from_directory(FRONTEND_PATH, 'index.html')
 
 @app.route('/dashboard')
