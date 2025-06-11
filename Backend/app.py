@@ -69,6 +69,90 @@ def extract_skills_from_text(text):
             found_skills.append(skill)
     return list(set(found_skills))
 
+# NEW: Función para extraer nombre, apellido, email y teléfono
+def extract_contact_info_from_text(text):
+    name = None
+    email = None
+    phone = None
+
+    # Expresión regular para correos electrónicos
+    email_pattern = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    emails = re.findall(email_pattern, text)
+    if emails:
+        email = emails[0] # Tomamos el primer email encontrado
+
+    # Expresión regular para números de teléfono (varios formatos)
+    # Soporta +XX XXX XXX XXXX, (XXX) XXX-XXXX, XXX-XXX-XXXX, XXX XXX XXXX, etc.
+    phone_pattern = r'(?:\+\d{1,3}[-.●\s]?)?\(?\d{2,4}\)?[-.●\s]?\d{3,4}[-.●\s]?\d{3,4}(?:(?:ext|x|xtns)\.?\s*\d+)?'
+    phones = re.findall(phone_pattern, text)
+    if phones:
+        # Filtrar para obtener números más plausibles (ej. al menos 7 dígitos sin contar separadores)
+        # y limpiar para solo dejar dígitos para una mejor comparación
+        cleaned_phones = [re.sub(r'[-.●\s\(\)]', '', p) for p in phones]
+        valid_phones = [p for p in cleaned_phones if len(p) >= 7]
+        if valid_phones:
+            phone = valid_phones[0] # Tomamos el primer número de teléfono "válido"
+
+    # Expresión regular para nombres y apellidos.
+    # Esto es más complejo y propenso a errores sin un modelo de NLP robusto.
+    # Una aproximación simple podría ser buscar dos palabras capitalizadas al principio del texto.
+    # O buscar "Nombre:" "Apellido:", etc.
+    # Para mayor precisión, se necesitaría NLTK, SpaCy u otra librería de NLP.
+    # Aquí una aproximación muy básica que podría no ser perfecta:
+    # Buscar dos palabras capitalizadas que parezcan nombre y apellido
+    name_pattern = r'([A-Z][a-z]+(?: [A-Z][a-z]+)*)\s+([A-Z][a-z]+(?: [A-Z][a-z]+)*)'
+    name_matches = re.search(name_pattern, text)
+    
+    first_name = None
+    last_name = None
+
+    if name_matches:
+        # Esto intenta capturar un nombre y apellido juntos.
+        # Es muy básico y puede fallar si el formato es diferente.
+        # Podríamos intentar buscar líneas que contengan "Nombre:" o "Apellido:"
+        # Si el CV es estructurado, buscar después de etiquetas:
+        
+        # Una forma más robusta pero aún con regex sería buscar patrones comunes como:
+        # "Nombre: [nombre]" o el inicio de una línea
+        
+        # Intentemos una heurística común: las primeras 2-3 palabras capitalizadas en las primeras N líneas
+        lines = text.strip().split('\n')
+        for line in lines[:5]: # Buscamos en las primeras 5 líneas
+            # Buscar patrones como "Nombre: [Nombre]" o "Apellido: [Apellido]"
+            name_label_match = re.search(r'(?:Name|Nombre|Full Name|Nombre Completo)[:\s]*([A-Z][a-zA-ZñÑáéíóúÁÉÍÓÚ\s-]+)', line, re.IGNORECASE)
+            if name_label_match:
+                full_name_from_label = name_label_match.group(1).strip()
+                name_parts = full_name_from_label.split()
+                if len(name_parts) > 0:
+                    first_name = name_parts[0]
+                    if len(name_parts) > 1:
+                        last_name = name_parts[-1] # Última palabra como apellido
+
+            # Si no encontramos por etiqueta, intentamos capturar dos palabras capitalizadas seguidas
+            # que no sean nombres de habilidades comunes o títulos
+            if not first_name and not last_name:
+                capitalized_words = re.findall(r'\b[A-Z][a-z]+\b', line)
+                # Filtramos palabras comunes que no suelen ser nombres propios
+                common_words = ["education", "experience", "skills", "profile", "contact"] # añadir más si es necesario
+                filtered_capitalized_words = [
+                    word for word in capitalized_words 
+                    if word.lower() not in common_words and len(word) > 1
+                ]
+                
+                if len(filtered_capitalized_words) >= 2:
+                    # Asumimos las primeras dos palabras capitalizadas como nombre y apellido
+                    first_name = filtered_capitalized_words[0]
+                    last_name = filtered_capitalized_words[1]
+                    break # Salimos al encontrar un posible nombre y apellido
+
+    return {
+        'first_name': first_name,
+        'last_name': last_name,
+        'email': email,
+        'phone': phone
+    }
+
+
 @app.route('/upload_cvs', methods=['POST'])
 def upload_cvs():
     if cv_collection is None:
@@ -93,6 +177,9 @@ def upload_cvs():
 
                 extracted_text = extract_text_from_pdf(filepath)
                 identified_skills = extract_skills_from_text(extracted_text)
+                
+                # NEW: Extraer información de contacto aquí también
+                contact_info = extract_contact_info_from_text(extracted_text)
 
                 cv_data = {
                     'original_filename': original_filename,
@@ -102,7 +189,8 @@ def upload_cvs():
                     'skills': identified_skills,
                     'upload_date': datetime.now(),
                     'Fav': False,
-                    'folders': [] # NEW: Inicializa con una lista de carpetas vacía
+                    'folders': [], # NEW: Inicializa con una lista de carpetas vacía
+                    'contact_info': contact_info # NEW: Guardar la información de contacto
                 }
                 cv_collection.insert_one(cv_data)
                 uploaded_count += 1
@@ -147,7 +235,8 @@ def filter_cvs():
         'original_filename': 1,
         'filename': 1, # Asegúrate de devolver el nombre del archivo guardado
         'skills': 1,
-        'folders': 1 # NEW: Incluir el campo 'folders'
+        'folders': 1, # NEW: Incluir el campo 'folders'
+        'contact_info': 1 # NEW: Incluir la información de contacto en la proyección
     }
 
     if not required_skills:
@@ -211,6 +300,41 @@ def view_cv(filename):
     if not os.path.exists(file_path):
         return jsonify({'message': 'Archivo no encontrado'}), 404
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# NEW: Endpoint para analizar CV y extraer información de contacto
+@app.route('/analyze_cv/<filename>', methods=['GET'])
+def analyze_cv(filename):
+    if cv_collection is None:
+        return jsonify({'message': 'Error: Conexión a la base de datos no establecida.'}), 500
+    
+    try:
+        # Buscar el CV por su filename (el nombre único guardado)
+        cv_data = cv_collection.find_one({'filename': filename})
+        
+        if not cv_data:
+            return jsonify({'message': 'CV no encontrado en la base de datos.'}), 404
+
+        extracted_text = cv_data.get('extracted_text', '')
+        
+        # Si la información de contacto ya fue extraída y guardada, la devolvemos directamente
+        if 'contact_info' in cv_data and cv_data['contact_info'] is not None:
+            return jsonify({'contact_info': cv_data['contact_info']}), 200
+        
+        # Si no está en la BD (por ejemplo, para CVs antiguos), la extraemos ahora
+        contact_info = extract_contact_info_from_text(extracted_text)
+        
+        # Opcional: Actualizar el documento en la BD con la información extraída
+        # para evitar re-procesar en futuras solicitudes.
+        cv_collection.update_one(
+            {'_id': cv_data['_id']},
+            {'$set': {'contact_info': contact_info}}
+        )
+
+        return jsonify({'contact_info': contact_info}), 200
+
+    except Exception as e:
+        print(f"Error al analizar CV {filename}: {e}")
+        return jsonify({'message': 'Error interno del servidor al analizar CV.'}), 500
 
 # --- NEW: Rutas de API para Carpetas ---
 

@@ -400,8 +400,9 @@
             margin-top: 20px;
             display: flex;
             gap: 10px;
-            justify-content: flex-end;
-            flex-wrap: wrap; /* Added for responsiveness */
+            /*justify-content: flex-end;*/
+         justify-content: center; 
+           /*flex-wrap: wrap;   Added for responsiveness */
         }
 
         .view-cv-btn {
@@ -414,6 +415,24 @@
             transition: all 0.3s ease;
             font-weight: bold;
         }
+        /* NEW: Estilos para el botón "Contactar" */
+        .contact-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); /* Green gradient */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            white-space: nowrap; /* Evita que el texto se rompa */
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4); /* Green shadow */
+        }
+
 
         .view-cv-btn:hover {
             transform: translateY(-2px);
@@ -530,6 +549,106 @@
             from { transform: translateX(0); opacity: 1; }
             to { transform: translateX(100%); opacity: 0; }
         }
+
+        /* NEW: Estilos para la Modal de Contacto */
+        .modal {
+            display: none; /* Oculto por defecto */
+            position: fixed; /* Permanece en su lugar */
+            z-index: 1000; /* Se superpone a todo */
+            left: 0;
+            top: 0;
+            width: 100%; /* Ancho completo */
+            height: 100%; /* Altura completa */
+            overflow: auto; /* Habilitar scroll si es necesario */
+            background-color: rgba(0,0,0,0.6); /* Fondo semi-transparente */
+            justify-content: center; /* Centrar contenido horizontalmente */
+            align-items: center; /* Centrar contenido verticalmente */
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto; /* Para centrar la modal */
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 80%; /* Ancho de la modal */
+            max-width: 500px; /* Ancho máximo */
+            position: relative;
+            animation: fadeIn 0.3s ease-out;
+            color: #333;
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.8em;
+            text-align: center;
+        }
+
+        .modal-content p {
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-content p strong {
+            color: #555;
+            flex-basis: 80px; /* Ancho fijo para las etiquetas */
+        }
+        .modal-content p a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        .modal-content p a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .modal-content .icon {
+            font-size: 1.3em;
+            color: #667eea;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #333;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+
+        /* Estilos para el texto de no disponible */
+        .not-available {
+            color: #999;
+            font-style: italic;
+        }
+
     </style>
 </head>
 <body>
@@ -545,7 +664,7 @@
                 
                 <div class="favorites-filter">
                     <button class="favorites-toggle" id="favoritesToggle">
-                        ⭐ Ver Solo Favoritos
+                        Ver Solo Favoritos
                     </button>
                 </div>
 
@@ -598,6 +717,15 @@
         </div>
     </div>
 
+    <div id="contactModal" class="modal">
+        <div class="modal-content">
+            <button class="close-button" id="closeContactModal">&times;</button>
+            <h3>Información de Contacto</h3>
+            <p><strong>Nombre:</strong> <span id="modalFullName"></span></p>
+            <p><strong>Email:</strong> <span id="modalEmail"></span></p>
+            <p><strong>Teléfono:</strong> <span id="modalPhone"></span></p>
+            </div>
+    </div>
     <script>
         const API_BASE_URL = 'http://127.0.0.1:5000';
 
@@ -614,7 +742,7 @@
         // Inicializar el botón correctamente
         document.addEventListener('DOMContentLoaded', () => {
             const button = document.getElementById('favoritesToggle');
-            button.textContent = '⭐ Ver Solo Favoritos';
+            button.textContent = 'Ver Solo Favoritos';
             button.classList.remove('active');
         });
 
@@ -647,6 +775,15 @@
                 selectedSkills.clear();
                 document.querySelectorAll('.skill-item').forEach(el => el.classList.remove('selected'));
                 loadCvs(selectedFolder === "" ? null : selectedFolder);
+            });
+
+            // NEW: Event listeners para la modal de contacto
+            document.getElementById('closeContactModal').addEventListener('click', closeContactModal);
+            window.addEventListener('click', (event) => {
+                const modal = document.getElementById('contactModal');
+                if (event.target == modal) {
+                    closeContactModal();
+                }
             });
         }
 
@@ -961,11 +1098,15 @@
             card.classList.add('candidate-card');
             if (isFavorite) card.classList.add('favorite');
 
+            // NEW: Obtener nombre completo para mostrar o el nombre de archivo
+            const fullName = (cv.contact_info && cv.contact_info.first_name && cv.contact_info.last_name) ?
+                             `${cv.contact_info.first_name} ${cv.contact_info.last_name}` : 
+                             (cv.original_filename || cv.filename || 'CV');
+
             card.innerHTML = `
                 <div class="candidate-header">
                     <div class="candidate-info">
-                        <h3>${cv.original_filename || cv.filename || 'CV'}</h3>
-                    </div>
+                        <h3>${fullName}</h3> </div>
                     <button class="favorite-btn ${isFavorite ? 'active' : ''}" 
                             title="${isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
                         ${isFavorite ? '⭐' : '☆'}
@@ -979,12 +1120,16 @@
                     ${cv.folders && cv.folders.length > 0 ? cv.folders.map(folder => `<span class="folder-tag">${folder}</span>`).join('') : 'Ninguna'}
                 </div>
                 <div class="candidate-actions">
-                    <button class="view-cv-btn">Ver CV</button>
-                    <button class="delete-cv-btn">Eliminar CV</button>
-                    <select class="assign-folder-select" data-filename="${cv.filename || cv.original_filename}">
+                    <button class="contact-btn" data-filename="${cv.filename}">Contactar</button> 
+                    <button class="view-cv-btn">Ver</button>
+                    <button class="delete-cv-btn">Eliminar</button><br>
+                   
+
+                   
+                </div>
+                <select class="assign-folder-select" data-filename="${cv.filename || cv.original_filename}">
                         <option value="">Asignar a carpeta...</option>
                         </select>
-                </div>
             `;
 
             card.querySelector('.favorite-btn').addEventListener('click', () => toggleFavorite(candidateId));
@@ -995,6 +1140,11 @@
                 }
             });
             card.querySelector('.delete-cv-btn').addEventListener('click', () => deleteCandidate(candidateId, card));
+
+            // NEW: Event listener para el botón "Contactar"
+            card.querySelector('.contact-btn').addEventListener('click', () => {
+                showContactModal(cv.contact_info);
+            });
 
             const assignFolderSelect = card.querySelector('.assign-folder-select');
             populateAssignFolderSelect(assignFolderSelect, cv.folders || []);
@@ -1016,10 +1166,14 @@
             item.classList.add('candidate-list-item');
             if (isFavorite) item.classList.add('favorite');
 
+            // NEW: Obtener nombre completo para mostrar o el nombre de archivo
+            const fullName = (cv.contact_info && cv.contact_info.first_name && cv.contact_info.last_name) ?
+                             `${cv.contact_info.first_name} ${cv.contact_info.last_name}` : 
+                             (cv.original_filename || cv.filename || 'CV');
+
             item.innerHTML = `
                 <div>
-                    <h4>${cv.original_filename || cv.filename || 'CV'}</h4>
-                    <div style="margin-top: 5px;">
+                    <h4>${fullName}</h4> <div style="margin-top: 5px;">
                         ${cv.skills && cv.skills.length > 0 ? cv.skills.map(skill => `<span class="candidate-skill" style="margin-right: 5px;">${skill}</span>`).join('') : 'Sin habilidades'}
                     </div>
                     <div class="candidate-folders" style="margin-top: 5px;">
@@ -1032,6 +1186,7 @@
                             title="${isFavorite ? 'Quitar de favoritos' : 'Añadir a favoritos'}">
                         ${isFavorite ? '⭐' : '☆'}
                     </button>
+                    <button class="contact-btn" data-filename="${cv.filename}">Contactar</button> 
                     <button class="view-cv-btn">Ver CV</button>
                     <button class="delete-cv-btn">Eliminar CV</button>
                      <select class="assign-folder-select" data-filename="${cv.filename || cv.original_filename}">
@@ -1048,6 +1203,11 @@
                 }
             });
             item.querySelector('.delete-cv-btn').addEventListener('click', () => deleteCandidate(candidateId, item));
+
+            // NEW: Event listener para el botón "Contactar"
+            item.querySelector('.contact-btn').addEventListener('click', () => {
+                showContactModal(cv.contact_info);
+            });
 
             const assignFolderSelect = item.querySelector('.assign-folder-select');
             populateAssignFolderSelect(assignFolderSelect, cv.folders || []);
@@ -1226,6 +1386,54 @@
                 }, 300);
             }, 3000);
         }
+
+        // NEW: Funciones para la Modal de Contacto
+        function showContactModal(contactInfo) {
+            const modal = document.getElementById('contactModal');
+            const modalFullName = document.getElementById('modalFullName');
+            const modalEmail = document.getElementById('modalEmail');
+            const modalPhone = document.getElementById('modalPhone');
+
+            if (contactInfo) {
+                const firstName = contactInfo.first_name || 'N/A';
+                const lastName = contactInfo.last_name || '';
+                modalFullName.textContent = `${firstName} ${lastName}`.trim() || 'No disponible';
+
+                const email = contactInfo.email;
+                if (email) {
+                    modalEmail.innerHTML = `<a href="mailto:${email}">${email}</a>`;
+                } else {
+                    modalEmail.textContent = 'No disponible';
+                    modalEmail.classList.add('not-available');
+                }
+
+                const phone = contactInfo.phone;
+                if (phone) {
+                    modalPhone.innerHTML = `<a href="tel:${phone}">${phone}</a>`;
+                } else {
+                    modalPhone.textContent = 'No disponible';
+                    modalPhone.classList.add('not-available');
+                }
+                
+            } else {
+                modalFullName.textContent = 'No disponible';
+                modalEmail.textContent = 'No disponible';
+                modalPhone.textContent = 'No disponible';
+                modalEmail.classList.add('not-available');
+                modalPhone.classList.add('not-available');
+            }
+
+            modal.style.display = 'flex'; // Usar flex para centrar
+        }
+
+        function closeContactModal() {
+            const modal = document.getElementById('contactModal');
+            modal.style.display = 'none';
+            // Limpiar estilos de "no disponible" al cerrar
+            document.getElementById('modalEmail').classList.remove('not-available');
+            document.getElementById('modalPhone').classList.remove('not-available');
+        }
+
     </script>
 </body>
 </html>
